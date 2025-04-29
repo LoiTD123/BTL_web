@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Rau Củ - Admin Dashboard</title>
+    <link rel="stylesheet" href="../static/css/home_admin.css">
+    <link rel="stylesheet" href="../static/css/stylerepass.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo">🍃 DL Shop</a>
+        <div class="nav-links">
+            <a href="home_admin.html">Trang chủ</a>
+            <a href="categories.html">Loại sản phẩm</a>
+            <a href="products.html">Sản phẩm</a>
+            <a href="#">Đơn hàng</a>
+            <a href="#">Khách hàng</a>
+            <a id="openModal">Đổi mật khẩu</a>
+            <a href="../pages/login.html" id="logOut">Đăng xuất</a>
+        </div>
+        <div class="search-cart">
+            <input type="text" placeholder="Search product..." class="search-boxup">
+        </div>
+    </nav>
+    
+    <header class="banner">
+        <img src="../static/images/rc1.jpg" class="banner-img" alt="Fresh Vegetables">
+    </header>
+    
+    <!-- Thống kê tổng quan -->
+    <section class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Tổng doanh thu</h3>
+            <p class="stat-value">15,000,000đ</p>
+            <p class="stat-change positive">+15% so với tháng trước</p>
+        </div>
+        <div class="stat-card">
+            <h3>Tổng đơn hàng</h3>
+            <p class="stat-value">150</p>
+            <p class="stat-change positive">+10% so với tháng trước</p>
+        </div>
+        <div class="stat-card">
+            <h3>Khách hàng mới</h3>
+            <p class="stat-value">25</p>
+            <p class="stat-change positive">+5% so với tháng trước</p>
+        </div>
+        <div class="stat-card">
+            <h3>Sản phẩm bán chạy</h3>
+            <p class="stat-value">Rau cải</p>
+            <p class="stat-change">50 đơn hàng</p>
+        </div>
+    </section>
+
+    <!-- Biểu đồ -->
+    <section class="dashboard-charts">
+        <div class="chart-container">
+            <h3>Doanh thu theo tháng</h3>
+            <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Top sản phẩm bán chạy</h3>
+            <canvas id="productsChart"></canvas>
+        </div>
+    </section>
+
+    <!-- Đơn hàng gần đây -->
+    <section class="recent-orders">
+        <h3>Đơn hàng gần đây</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Sản phẩm</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="recentOrdersTable">
+                <!-- Orders will be loaded here -->
+            </tbody>
+        </table>
+    </section>
+    
+    <footer>
+        <div class="footer-container">
+            <h1>DL Shop</h1>
+            <div class="search-box">
+                <input type="text" placeholder="Product...">
+                <button>Search</button>
+            </div>
+            <div class="footer-links">
+                <a href="#">About us</a>
+                <span>0123456789</span>
+                <a href="#">Contact us</a>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2022 Brand, Inc. · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Sitemap</a></p>
+            </div>
+        </div>
+    </footer>
+    
+    <div class="password-modal" id="passwordModal">
+        <div class="login-container">
+            <span class="close">&times;</span>
+            <h2>Đổi mật khẩu</h2>
+            <div class="input-group">
+                <label for="oldPassword">Mật khẩu cũ</label>
+                <input type="password" id="oldPassword" placeholder="Nhập mật khẩu cũ">
+            </div>
+            <div class="input-group">
+                <label for="newPassword">Mật khẩu mới</label>
+                <input type="password" id="newPassword" placeholder="Tối thiểu 8 kí tự">
+            </div>
+            <div class="input-group">
+                <label for="confirmPassword">Nhập lại mật khẩu</label>
+                <input type="password" id="confirmPassword" placeholder="Nhập lại mật khẩu mới">
+            </div>
+            <button onclick="repass()" class="repass-btn">Đổi mật khẩu</button>
+            <div id="message02" class="message" style="display: none;"></div>
+        </div>
+    </div> 
+    
+    <script src="../static/js/repass.js"></script>
+    <script src="../static/js/dashboard.js"></script>
+</body>
+</html>
