@@ -111,6 +111,18 @@ function removeFromCart(productId) {
     loadCartItems();
 }
 
+// Hiển thị form thanh toán
+function showCheckoutForm() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    checkoutForm.style.display = 'flex';
+}
+
+// Đóng form thanh toán
+function closeCheckoutForm() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    checkoutForm.style.display = 'none';
+}
+
 // Xử lý nút thanh toán
 document.getElementById('checkoutBtn').addEventListener('click', () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -118,8 +130,45 @@ document.getElementById('checkoutBtn').addEventListener('click', () => {
         alert('Giỏ hàng của bạn đang trống!');
         return;
     }
-    // TODO: Thêm chức năng thanh toán
-    alert('Chức năng thanh toán đang được phát triển!');
+    showCheckoutForm();
+});
+
+// Xử lý form đặt hàng
+document.getElementById('orderForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const shippingAddress = document.getElementById('shippingAddress').value;
+    const phoneNumber = document.getElementById('phoneNumber').value;
+    const notes = document.getElementById('notes').value;
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    try {
+        const response = await fetch('http://localhost:8080/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                shipping_address: shippingAddress,
+                phone_number: phoneNumber,
+                notes: notes,
+                items: cart
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Không thể tạo đơn hàng');
+        }
+
+        const orderData = await response.json();
+        alert('Đặt hàng thành công!');
+        localStorage.removeItem('cart'); // Xóa giỏ hàng sau khi đặt hàng thành công
+        closeCheckoutForm();
+        loadCartItems(); // Cập nhật lại giao diện giỏ hàng
+    } catch (error) {
+        console.error('Lỗi khi đặt hàng:', error);
+        alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
+    }
 });
 
 // Tải giỏ hàng khi trang được tải

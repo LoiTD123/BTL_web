@@ -36,6 +36,31 @@
         </div>
     </div>
 
+    <!-- Form thanh toán -->
+    <div id="checkoutForm" class="checkout-form" style="display: none;">
+        <div class="form-container">
+            <h2>Thông tin thanh toán</h2>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="shippingAddress">Địa chỉ nhận hàng</label>
+                    <input type="text" id="shippingAddress" required placeholder="Nhập địa chỉ nhận hàng">
+                </div>
+                <div class="form-group">
+                    <label for="phoneNumber">Số điện thoại</label>
+                    <input type="tel" id="phoneNumber" required placeholder="Nhập số điện thoại">
+                </div>
+                <div class="form-group">
+                    <label for="notes">Ghi chú</label>
+                    <textarea id="notes" placeholder="Ghi chú cho đơn hàng (không bắt buộc)"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick="closeCheckoutForm()">Hủy</button>
+                    <button type="submit" class="submit-btn">Xác nhận đặt hàng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <footer>
         <div class="footer-container">
             <h1>DL Shop</h1>
