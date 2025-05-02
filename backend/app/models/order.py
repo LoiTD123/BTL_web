@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from ..database import Base
 import enum
+from datetime import datetime, timezone
 
 class OrderStatus(str, enum.Enum):
     PENDING = "pending"

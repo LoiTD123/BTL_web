@@ -296,16 +296,20 @@ footer h1 {
     background-color: #4CAF50;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 14px;
     margin-top: 10px;
-    transition: background-color 0.2s;
-    font-weight: bold;
+    transition: background-color 0.3s;
 }
 
 .add-to-cart-btn:hover {
     background-color: #45a049;
+}
+
+.add-to-cart-btn:active {
+    background-color: #3d8b40;
 }
 
 #productsContainer {

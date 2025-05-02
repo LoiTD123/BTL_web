@@ -139,6 +139,7 @@ async function loadProducts(page = 1) {
                     <h3>${product.name}</h3>
                     <p class="price">${product.price.toLocaleString('vi-VN')} VNĐ</p>
                     <p class="description">${product.description || 'Không có mô tả'}</p>
+                    <button class="add-to-cart-btn" onclick="addToCart(${product.id})">Thêm vào giỏ hàng</button>
                 </div>
             `;
             
@@ -202,5 +203,66 @@ document.addEventListener('DOMContentLoaded', () => {
         nextPageBtn.addEventListener('click', () => {
             loadProducts(currentPage + 1);
         });
+    }
+});
+
+// Thêm hàm xử lý thêm vào giỏ hàng
+function addToCart(productId) {
+    // Lấy giỏ hàng hiện tại từ localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+    const existingItem = cart.find(item => item.productId === productId);
+    
+    if (existingItem) {
+        // Nếu đã có, tăng số lượng
+        existingItem.quantity += 1;
+    } else {
+        // Nếu chưa có, thêm mới vào giỏ hàng
+        cart.push({
+            productId: productId,
+            quantity: 1
+        });
+    }
+    
+    // Lưu giỏ hàng vào localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Hiển thị thông báo
+    const notification = document.createElement('div');
+    notification.className = 'cart-notification';
+    notification.textContent = 'Đã thêm sản phẩm vào giỏ hàng!';
+    document.body.appendChild(notification);
+    
+    // Tự động ẩn thông báo sau 2 giây
+    setTimeout(() => {
+        notification.remove();
+    }, 2000);
+    
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
+    updateCartCount();
+}
+
+// Hàm cập nhật số lượng sản phẩm trong giỏ hàng
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    const cartLink = document.querySelector('a[href="../pages/cart.html"]');
+    
+    if (cartLink) {
+        if (totalItems > 0) {
+            cartLink.innerHTML = `Giỏ hàng (${totalItems})`;
+        } else {
+            cartLink.innerHTML = 'Giỏ hàng';
+        }
+    }
+}
+
+// Cập nhật số lượng giỏ hàng khi trang được tải
+document.addEventListener('DOMContentLoaded', () => {
+    if (checkAuth()) {
+        loadCategories();
+        loadProducts(currentPage);
+        updateCartCount(); // Cập nhật số lượng giỏ hàng
     }
 }); 

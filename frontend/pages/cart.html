@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - DL Shop</title>
+    <link rel="stylesheet" href="../static/css/stylehome.css">
+    <link rel="stylesheet" href="../static/css/cart.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo">🍃 DL Shop</a>
+        <div class="nav-links">
+            <a href="home_user.html">Trang chủ</a>
+            <a href="#">Loại sản phẩm</a>
+            <a href="cart.html">Giỏ hàng</a>
+            <a href="#" id="openModal">Đổi mật khẩu</a>
+            <a href="login.html" id="logOut">Đăng xuất</a>
+        </div>
+        <div class="search-cart">
+            <input type="text" placeholder="Search product..." class="search-boxup">
+        </div>
+    </nav>
+
+    <div class="cart-container">
+        <h1>Giỏ hàng của bạn</h1>
+        <div id="cartItems" class="cart-items">
+            <!-- Danh sách sản phẩm sẽ được hiển thị ở đây -->
+        </div>
+        <div class="cart-summary">
+            <div class="total-price">
+                <span>Tổng tiền:</span>
+                <span id="totalAmount">0 VNĐ</span>
+            </div>
+            <button id="checkoutBtn" class="checkout-btn">Thanh toán</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <h1>DL Shop</h1>
+            <div class="search-box">
+                <input type="text" placeholder="Product...">
+                <button>Search</button>
+            </div>
+            <div class="footer-links">
+                <a href="#">About us</a>
+                <span>0123456789</span>
+                <a href="#">Contact us</a>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2022 Brand, Inc. · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Sitemap</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../static/js/cart.js"></script>
+    <script src="../static/js/navigation.js"></script>
+</body>
+</html> 
