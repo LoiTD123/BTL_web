@@ -52,5 +52,6 @@ function checkAuth() {
 // Xử lý đăng xuất
 function logout() {
     localStorage.removeItem('user_id');
+    localStorage.removeItem('token');
     window.location.href = 'login.html';
 }

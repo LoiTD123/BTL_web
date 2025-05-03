@@ -39,6 +39,7 @@
     <!-- Form thanh toán -->
     <div id="checkoutForm" class="checkout-form" style="display: none;">
         <div class="form-container">
+            <button class="close-btn" onclick="closeCheckoutForm()">&times;</button>
             <h2>Thông tin thanh toán</h2>
             <form id="orderForm">
                 <div class="form-group">
@@ -56,6 +57,11 @@
                 <div class="form-actions">
                     <button type="button" class="cancel-btn" onclick="closeCheckoutForm()">Hủy</button>
                     <button type="submit" class="submit-btn">Xác nhận đặt hàng</button>
+                </div>
+                <div class="qr-section">
+                    <h3>Quét mã QR để thanh toán</h3>
+                    <img src="../static/images/Qr.jpg" alt="QR Code" class="qr-code">
+                    <p class="qr-note">Sau khi thanh toán, vui lòng bấm nút "Xác nhận đặt hàng"</p>
                 </div>
             </form>
         </div>

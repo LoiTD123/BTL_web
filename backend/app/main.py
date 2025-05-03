@@ -9,7 +9,7 @@ from pathlib import Path
 # Thêm thư mục gốc vào PYTHONPATH
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.routers import auth, category, admin, product
+from app.routers import auth, category, admin, product, order
 from app.database import engine
 import app.models.user, app.models.category, app.models.product, app.models.order, app.models.orderdetail
 
@@ -28,20 +28,22 @@ app = FastAPI(
 
 # Cấu hình CORS
 origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "http://localhost:8000",
-    "http://localhost:3000",
-    "http://127.0.0.1:5500",  # VS Code Live Server thường dùng port này
-    "*"  # Trong môi trường phát triển, cho phép tất cả
+    "http://localhost:8000",  # Frontend port
+    "http://localhost:8080",  # Backend port
+    "http://127.0.0.1:8000",  # Frontend IP
+    "http://127.0.0.1:8080",  # Backend IP
+    "http://localhost",       # Localhost
+    "http://127.0.0.1"       # Localhost IP
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins,  # Chỉ cho phép các origin được định nghĩa
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Chỉ cho phép các phương thức cần thiết
+    allow_headers=["*"],  # Cho phép tất cả các headers
+    expose_headers=["*"], # Cho phép truy cập tất cả các headers
+    max_age=3600
 )
 
 # Tạo thư mục uploads nếu chưa tồn tại
@@ -57,6 +59,7 @@ app.include_router(auth.router)
 app.include_router(category.router)
 app.include_router(admin.router)
 app.include_router(product.router)
+app.include_router(order.router)
 
 @app.get("/")
 def read_root():

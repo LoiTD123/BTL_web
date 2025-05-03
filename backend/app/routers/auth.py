@@ -23,7 +23,7 @@ router = APIRouter(
 load_dotenv()
 
 # Cấu hình bảo mật
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
+SECRET_KEY = "Loi27122004."  # Sử dụng cùng một key với database
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

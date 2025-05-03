@@ -7,7 +7,8 @@ const messageDiv = document.getElementById('message');
 // Hàm kiểm tra user_id
 function checkAuth() {
     const user_id = localStorage.getItem('user_id');
-    if (!user_id) {
+    const token = localStorage.getItem('token');
+    if (!user_id || !token) {
         return false;
     }
     return true;
@@ -16,6 +17,7 @@ function checkAuth() {
 // Hàm xử lý đăng xuất
 function logout() {
     localStorage.removeItem('user_id');
+    localStorage.removeItem('token');
     window.location.href = 'login.html';
 }
 
@@ -41,14 +43,37 @@ loginForm.addEventListener('submit', async (e) => {
             })
         });
 
-        const data = await response.json();
+        // Debug: Kiểm tra response
+        console.log('Response Status:', response.status);
+        console.log('Response Headers:', response.headers);
+        
+        let data;
+        try {
+            data = await response.json();
+            console.log('Response Data:', data);
+        } catch (error) {
+            console.error('Error parsing response:', error);
+            throw new Error('Không thể đọc dữ liệu từ server');
+        }
 
         if (!response.ok) {
             throw new Error(data.detail || 'Đăng nhập thất bại');
         }
 
-        // Lưu user_id vào localStorage
+        // Kiểm tra dữ liệu trả về
+        if (!data.access_token || !data.user_id) {
+            console.error('Invalid response data:', data);
+            throw new Error('Dữ liệu trả về không hợp lệ');
+        }
+
+        // Lưu user_id và token vào localStorage
         localStorage.setItem('user_id', data.user_id);
+        localStorage.setItem('token', data.access_token);
+        
+        // Debug: Kiểm tra localStorage sau khi lưu
+        console.log('LocalStorage after login:');
+        console.log('user_id:', localStorage.getItem('user_id'));
+        console.log('token:', localStorage.getItem('token'));
 
         // Kiểm tra user_id để chuyển hướng
         const userId = parseInt(data.user_id);
