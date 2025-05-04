@@ -198,8 +198,67 @@ async function loadCategories(page = 1) {
 
 // Hàm sửa loại sản phẩm
 async function editCategory(categoryId) {
-    // TODO: Implement edit category
-    console.log('Edit category:', categoryId);
+    try {
+        // Lấy thông tin danh mục
+        const response = await fetch(`http://localhost:8080/api/categories/${categoryId}`);
+        if (!response.ok) {
+            throw new Error('Không thể tải thông tin danh mục');
+        }
+        const category = await response.json();
+        
+        // Điền thông tin vào form
+        document.getElementById('editCategoryId').value = category.id;
+        document.getElementById('editCategoryName').value = category.name;
+        document.getElementById('editCategoryDescription').value = category.description || '';
+        
+        // Hiển thị modal
+        const editModal = document.getElementById('editCategoryModal');
+        editModal.style.display = 'block';
+        
+        // Xử lý đóng modal
+        const closeBtn = editModal.querySelector('.close');
+        closeBtn.onclick = () => {
+            editModal.style.display = 'none';
+        };
+        
+        // Xử lý submit form
+        const editForm = document.getElementById('editCategoryForm');
+        editForm.onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('name', document.getElementById('editCategoryName').value);
+            formData.append('description', document.getElementById('editCategoryDescription').value);
+            
+            const imageFile = document.getElementById('editCategoryImage').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            
+            try {
+                const updateResponse = await fetch(`http://localhost:8080/api/categories/${categoryId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+                
+                if (updateResponse.ok) {
+                    alert('Cập nhật loại sản phẩm thành công!');
+                    editModal.style.display = 'none';
+                    editForm.reset();
+                    loadCategories(currentPage);
+                } else {
+                    const error = await updateResponse.json();
+                    alert('Lỗi: ' + (error.detail || 'Không thể cập nhật loại sản phẩm'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi cập nhật loại sản phẩm');
+            }
+        };
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi tải thông tin danh mục');
+    }
 }
 
 // Hàm xóa loại sản phẩm

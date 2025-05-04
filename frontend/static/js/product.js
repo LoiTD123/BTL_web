@@ -158,8 +158,71 @@ async function loadProducts(page = 1) {
 
 // Hàm sửa sản phẩm
 async function editProduct(productId) {
-    // TODO: Implement edit product
-    console.log('Edit product:', productId);
+    try {
+        // Lấy thông tin sản phẩm
+        const response = await fetch(`http://localhost:8080/api/products/${productId}`);
+        if (!response.ok) {
+            throw new Error('Không thể tải thông tin sản phẩm');
+        }
+        const product = await response.json();
+        
+        // Điền thông tin vào form
+        document.getElementById('editProductId').value = product.id;
+        document.getElementById('editProductName').value = product.name;
+        document.getElementById('editProductDescription').value = product.description || '';
+        document.getElementById('editProductPrice').value = product.price;
+        document.getElementById('editProductCategory').value = product.category_id;
+        
+        // Hiển thị modal
+        const editModal = document.getElementById('editProductModal');
+        editModal.style.display = 'block';
+        
+        // Xử lý đóng modal
+        const closeBtn = editModal.querySelector('.close');
+        closeBtn.onclick = () => {
+            editModal.style.display = 'none';
+        };
+        
+        // Xử lý submit form
+        const editForm = document.getElementById('editProductForm');
+        editForm.onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('name', document.getElementById('editProductName').value);
+            formData.append('description', document.getElementById('editProductDescription').value);
+            formData.append('price', document.getElementById('editProductPrice').value);
+            formData.append('category_id', document.getElementById('editProductCategory').value);
+            
+            const imageFile = document.getElementById('editProductImage').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            
+            try {
+                const updateResponse = await fetch(`http://localhost:8080/api/products/${productId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+                
+                if (updateResponse.ok) {
+                    alert('Cập nhật sản phẩm thành công!');
+                    editModal.style.display = 'none';
+                    editForm.reset();
+                    loadProducts(currentPage);
+                } else {
+                    const error = await updateResponse.json();
+                    alert('Lỗi: ' + (error.detail || 'Không thể cập nhật sản phẩm'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi cập nhật sản phẩm');
+            }
+        };
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi tải thông tin sản phẩm');
+    }
 }
 
 // Hàm xóa sản phẩm

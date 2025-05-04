@@ -64,6 +64,31 @@
         </div>
     </div>
 
+    <!-- Modal sửa loại sản phẩm -->
+    <div class="modal" id="editCategoryModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Sửa loại sản phẩm</h2>
+            <form id="editCategoryForm">
+                <input type="hidden" id="editCategoryId">
+                <div class="input-group">
+                    <label for="editCategoryName">Tên loại sản phẩm *</label>
+                    <input type="text" id="editCategoryName" name="name" required maxlength="100" placeholder="Nhập tên loại sản phẩm">
+                </div>
+                <div class="input-group">
+                    <label for="editCategoryDescription">Mô tả</label>
+                    <textarea id="editCategoryDescription" name="description" rows="3" placeholder="Nhập mô tả loại sản phẩm"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="editCategoryImage">Hình ảnh</label>
+                    <input type="file" id="editCategoryImage" name="image" accept="image/*">
+                    <small>Định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB</small>
+                </div>
+                <button type="submit" class="submit-btn">Cập nhật</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal đổi mật khẩu -->
     <div class="modal" id="passwordModal">
         <div class="modal-content">

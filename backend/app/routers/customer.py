@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
 from pydantic import BaseModel
+from fastapi import status
 
 from ..database import get_db
 from ..models.user import Customer
@@ -104,4 +105,27 @@ def update_customer(
         "email": customer.username,
         "phone": customer.phonenum,
         "created_at": customer.created_at
-    } 
+    }
+
+@router.delete("/{customer_id}")
+def delete_customer(
+    customer_id: int,
+    db: Session = Depends(get_db)
+):
+    """Xóa khách hàng"""
+    try:
+        # Tìm khách hàng
+        customer = db.query(Customer).filter(Customer.id == customer_id).first()
+        if not customer:
+            raise HTTPException(status_code=404, detail="Khách hàng không tồn tại")
+        
+        # Xóa khách hàng (cascade sẽ tự động xóa các đơn hàng liên quan)
+        db.delete(customer)
+        db.commit()
+        
+        return {"message": "Xóa khách hàng thành công"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi khi xóa khách hàng: {str(e)}"
+        ) 

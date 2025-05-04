@@ -74,6 +74,41 @@
         </div>
     </div>
 
+    <!-- Modal sửa sản phẩm -->
+    <div class="modal" id="editProductModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Sửa sản phẩm</h2>
+            <form id="editProductForm">
+                <input type="hidden" id="editProductId">
+                <div class="input-group">
+                    <label for="editProductName">Tên sản phẩm *</label>
+                    <input type="text" id="editProductName" name="name" required maxlength="100" placeholder="Nhập tên sản phẩm">
+                </div>
+                <div class="input-group">
+                    <label for="editProductDescription">Mô tả</label>
+                    <textarea id="editProductDescription" name="description" rows="3" placeholder="Nhập mô tả sản phẩm"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="editProductPrice">Giá *</label>
+                    <input type="number" id="editProductPrice" name="price" step="0.01" required placeholder="Nhập giá sản phẩm">
+                </div>
+                <div class="input-group">
+                    <label for="editProductCategory">Danh mục *</label>
+                    <select id="editProductCategory" name="category_id" required>
+                        <!-- Sẽ được điền bằng JavaScript -->
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="editProductImage">Hình ảnh</label>
+                    <input type="file" id="editProductImage" name="image" accept="image/*">
+                    <small>Định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB</small>
+                </div>
+                <button type="submit" class="submit-btn">Cập nhật</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal đổi mật khẩu -->
     <div class="modal" id="passwordModal">
         <div class="modal-content">

@@ -161,4 +161,72 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
     db.delete(category)
     db.commit()
     
-    return {"message": "Xóa danh mục và tất cả sản phẩm thuộc danh mục thành công"} 
+    return {"message": "Xóa danh mục và tất cả sản phẩm thuộc danh mục thành công"}
+
+@router.get("/{category_id}", response_model=CategoryResponse)
+def get_category(category_id: int, db: Session = Depends(get_db)):
+    """Lấy thông tin chi tiết một danh mục"""
+    category = db.query(Category).filter(Category.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Danh mục không tồn tại")
+    
+    return CategoryResponse.model_validate(category)
+
+@router.put("/{category_id}", response_model=CategoryResponse)
+async def update_category(
+    category_id: int,
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    """Cập nhật thông tin danh mục"""
+    # Kiểm tra danh mục tồn tại
+    category = db.query(Category).filter(Category.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Danh mục không tồn tại")
+    
+    # Kiểm tra tên danh mục đã tồn tại chưa (trừ danh mục hiện tại)
+    existing_category = db.query(Category).filter(
+        Category.name == name,
+        Category.id != category_id
+    ).first()
+    if existing_category:
+        raise HTTPException(
+            status_code=400,
+            detail="Tên danh mục đã tồn tại"
+        )
+    
+    # Xử lý file ảnh nếu có
+    if image:
+        # Xóa ảnh cũ nếu có
+        if category.image and category.image.startswith("/uploads/"):
+            old_filename = category.image.replace("/uploads/", "")
+            old_path = UPLOAD_DIR / old_filename
+            if old_path.exists():
+                try:
+                    old_path.unlink()
+                except Exception as e:
+                    print(f"Lỗi khi xóa ảnh cũ: {str(e)}")
+        
+        # Tạo tên file duy nhất
+        file_extension = os.path.splitext(image.filename)[1]
+        unique_filename = f"{name}_{image.filename}"
+        file_path = UPLOAD_DIR / unique_filename
+        
+        # Lưu file
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        
+        # Lưu đường dẫn tương đối
+        category.image = unique_filename
+    
+    # Cập nhật thông tin
+    category.name = name
+    if description is not None:
+        category.description = description
+    
+    db.commit()
+    db.refresh(category)
+    
+    return CategoryResponse.model_validate(category) 

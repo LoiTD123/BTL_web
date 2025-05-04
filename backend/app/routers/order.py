@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from typing import List
+from sqlalchemy import text, func
+from typing import List, Optional
 from ..database import get_db
 from ..models.order import Order, OrderStatus
 from ..models.orderdetail import OrderDetail
@@ -133,4 +133,94 @@ async def create_order_detail(
     db.commit()
     db.refresh(db_order_detail)
     
-    return db_order_detail 
+    return db_order_detail
+
+@router.get("")
+def get_orders(db: Session = Depends(get_db)):
+    """Lấy danh sách đơn hàng"""
+    try:
+        # Lấy tất cả đơn hàng mà không join với bảng khác
+        orders = db.query(Order).all()
+        
+        # Chuyển đổi orders sang dictionary đơn giản
+        order_list = []
+        for order in orders:
+            order_data = {
+                "id": order.id,
+                "order_number": order.order_number,
+                "total_amount": float(order.total_amount),
+                "status": order.status,
+                "created_at": order.created_at
+            }
+            order_list.append(order_data)
+        
+        return {
+            "items": order_list
+        }
+    except Exception as e:
+        logger.error(f"Error getting orders: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi khi lấy danh sách đơn hàng: {str(e)}"
+        )
+
+@router.put("/{order_id}")
+def update_order(
+    order_id: int,
+    order_update: dict,
+    db: Session = Depends(get_db)
+):
+    """Cập nhật thông tin đơn hàng"""
+    try:
+        # Tìm đơn hàng
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
+        
+        # Cập nhật các trường được phép
+        if "status" in order_update:
+            order.status = order_update["status"]
+        if "notes" in order_update:
+            order.notes = order_update["notes"]
+        
+        db.commit()
+        db.refresh(order)
+        
+        return {
+            "id": order.id,
+            "order_number": order.order_number,
+            "total_amount": float(order.total_amount),
+            "status": order.status,
+            "notes": order.notes,
+            "created_at": order.created_at
+        }
+    except Exception as e:
+        logger.error(f"Error updating order: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi khi cập nhật đơn hàng: {str(e)}"
+        )
+
+@router.delete("/{order_id}")
+def delete_order(
+    order_id: int,
+    db: Session = Depends(get_db)
+):
+    """Xóa đơn hàng"""
+    try:
+        # Tìm đơn hàng
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
+        
+        # Xóa đơn hàng (cascade sẽ tự động xóa các order_details liên quan)
+        db.delete(order)
+        db.commit()
+        
+        return {"message": "Xóa đơn hàng thành công"}
+    except Exception as e:
+        logger.error(f"Error deleting order: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi khi xóa đơn hàng: {str(e)}"
+        ) 
