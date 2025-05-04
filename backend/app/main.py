@@ -9,7 +9,7 @@ from pathlib import Path
 # Thêm thư mục gốc vào PYTHONPATH
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.routers import auth, category, admin, product, order
+from app.routers import auth, category, admin, product, order, customer
 from app.database import engine
 import app.models.user, app.models.category, app.models.product, app.models.order, app.models.orderdetail
 
@@ -60,6 +60,7 @@ app.include_router(category.router)
 app.include_router(admin.router)
 app.include_router(product.router)
 app.include_router(order.router)
+app.include_router(customer.router)
 
 @app.get("/")
 def read_root():
