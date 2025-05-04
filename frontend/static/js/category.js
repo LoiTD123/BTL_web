@@ -284,4 +284,57 @@ async function deleteCategory(categoryId) {
 }
 
 // Tải danh sách loại sản phẩm khi trang được load
-document.addEventListener('DOMContentLoaded', () => loadCategories(1)); 
+document.addEventListener('DOMContentLoaded', () => loadCategories(1));
+
+// Hàm tìm kiếm danh mục
+function searchCategories() {
+    const searchBox = document.querySelector('.search-boxup');
+    const searchTerm = searchBox.value.toLowerCase();
+    const categories = document.querySelectorAll('.category-card');
+    
+    categories.forEach(category => {
+        const categoryName = category.querySelector('.category-header h3').textContent.toLowerCase();
+        const categoryProducts = category.querySelectorAll('.product-mini-info h4');
+        let hasMatch = categoryName.includes(searchTerm);
+        
+        // Kiểm tra tên sản phẩm trong danh mục
+        if (!hasMatch) {
+            categoryProducts.forEach(product => {
+                if (product.textContent.toLowerCase().includes(searchTerm)) {
+                    hasMatch = true;
+                }
+            });
+        }
+        
+        category.style.display = hasMatch ? 'block' : 'none';
+    });
+}
+
+// Xử lý tìm kiếm khi nhập
+document.addEventListener('DOMContentLoaded', function() {
+    const searchBox = document.querySelector('.search-boxup');
+    
+    if (searchBox) {
+        searchBox.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const categories = document.querySelectorAll('.category-card');
+            
+            categories.forEach(category => {
+                const categoryName = category.querySelector('.category-header h3').textContent.toLowerCase();
+                const categoryProducts = category.querySelectorAll('.product-mini-info h4');
+                let hasMatch = categoryName.includes(searchTerm);
+                
+                // Kiểm tra tên sản phẩm trong danh mục
+                if (!hasMatch) {
+                    categoryProducts.forEach(product => {
+                        if (product.textContent.toLowerCase().includes(searchTerm)) {
+                            hasMatch = true;
+                        }
+                    });
+                }
+                
+                category.style.display = hasMatch ? 'block' : 'none';
+            });
+        });
+    }
+}); 

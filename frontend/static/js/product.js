@@ -271,4 +271,51 @@ async function deleteProduct(productId) {
 document.addEventListener('DOMContentLoaded', () => {
     loadCategories();
     loadProducts();
+});
+
+// Hàm tìm kiếm sản phẩm
+function searchProducts() {
+    const searchBox = document.querySelector('.search-boxup');
+    const searchTerm = searchBox.value.toLowerCase();
+    const products = document.querySelectorAll('.product-card');
+    
+    products.forEach(product => {
+        const productInfo = product.querySelector('.product-info');
+        if (productInfo) {
+            const productName = productInfo.querySelector('h3').textContent.toLowerCase();
+            const productDescription = productInfo.querySelector('.description').textContent.toLowerCase();
+            
+            if (productName.includes(searchTerm) || productDescription.includes(searchTerm)) {
+                product.style.display = 'block';
+            } else {
+                product.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Xử lý tìm kiếm khi nhập
+document.addEventListener('DOMContentLoaded', function() {
+    const searchBox = document.querySelector('.search-boxup');
+    
+    if (searchBox) {
+        searchBox.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const products = document.querySelectorAll('.product-card');
+            
+            products.forEach(product => {
+                const productInfo = product.querySelector('.product-info');
+                if (productInfo) {
+                    const productName = productInfo.querySelector('h3').textContent.toLowerCase();
+                    const productDescription = productInfo.querySelector('.description').textContent.toLowerCase();
+                    
+                    if (productName.includes(searchTerm) || productDescription.includes(searchTerm)) {
+                        product.style.display = 'block';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
 }); 
