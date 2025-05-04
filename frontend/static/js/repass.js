@@ -110,3 +110,27 @@ function repass() {
         }, 1500);
     }
 }
+
+// Xử lý mở modal đổi mật khẩu
+document.addEventListener('DOMContentLoaded', function() {
+    const openModalBtn = document.getElementById('openModal');
+    const passwordModal = document.getElementById('passwordModal');
+    const closeBtn = passwordModal.querySelector('.close');
+
+    if (openModalBtn && passwordModal) {
+        openModalBtn.addEventListener('click', function() {
+            passwordModal.style.display = 'block';
+        });
+
+        closeBtn.addEventListener('click', function() {
+            passwordModal.style.display = 'none';
+        });
+
+        // Đóng modal khi click bên ngoài
+        window.addEventListener('click', function(event) {
+            if (event.target === passwordModal) {
+                passwordModal.style.display = 'none';
+            }
+        });
+    }
+});

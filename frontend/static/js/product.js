@@ -166,6 +166,23 @@ async function editProduct(productId) {
         }
         const product = await response.json();
         
+        // Lấy danh sách danh mục
+        const categoriesResponse = await fetch('http://localhost:8080/api/categories?page_size=100');
+        if (!categoriesResponse.ok) {
+            throw new Error('Không thể tải danh sách danh mục');
+        }
+        const categoriesData = await categoriesResponse.json();
+        
+        // Điền danh sách danh mục vào select box
+        const categorySelect = document.getElementById('editProductCategory');
+        categorySelect.innerHTML = '';
+        categoriesData.items.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categorySelect.appendChild(option);
+        });
+        
         // Điền thông tin vào form
         document.getElementById('editProductId').value = product.id;
         document.getElementById('editProductName').value = product.name;
