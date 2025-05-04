@@ -33,7 +33,7 @@ window.addEventListener('click', (e) => {
 // Tải danh sách danh mục
 async function loadCategories() {
     try {
-        const response = await fetch('http://localhost:8080/api/categories');
+        const response = await fetch('http://localhost:8080/api/categories?page_size=100');
         const data = await response.json();
         
         // Xóa các option cũ

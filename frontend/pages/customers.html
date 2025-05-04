@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Rau Củ - Quản lý khách hàng</title>
+    <link rel="stylesheet" href="../static/css/home_admin.css">
+    <link rel="stylesheet" href="../static/css/customer.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo">🍃 DL Shop</a>
+        <div class="nav-links">
+            <a href="home_admin.html">Trang chủ</a>
+            <a href="categories.html">Loại sản phẩm</a>
+            <a href="products.html">Sản phẩm</a>
+            <a href="#">Đơn hàng</a>
+            <a href="customers.html" class="active">Khách hàng</a>
+            <a id="openModal">Đổi mật khẩu</a>
+            <a href="login.html" id="logOut">Đăng xuất</a>
+        </div>
+        <div class="search-cart">
+            <input type="text" placeholder="Tìm kiếm khách hàng..." class="search-boxup" id="searchCustomer">
+        </div>
+    </nav>
+
+    <!-- Container hiển thị danh sách khách hàng -->
+    <div id="customersContainer">
+        <div class="container-header">
+            <h2>Danh sách khách hàng</h2>
+        </div>
+        <div id="customersList" class="customer-list">
+            <!-- Danh sách khách hàng sẽ được hiển thị ở đây -->
+        </div>
+        <div class="pagination">
+            <button id="prevPage" class="page-btn">⬅️ Trang trước</button>
+            <span id="pageInfo" class="current-page">Trang 1 / 1</span>
+            <button id="nextPage" class="page-btn">Trang sau ➡️</button>
+        </div>
+    </div>
+
+    <!-- Modal sửa thông tin khách hàng -->
+    <div class="modal" id="editCustomerModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Sửa thông tin khách hàng</h2>
+            <form id="editCustomerForm">
+                <input type="hidden" id="editCustomerId">
+                <div class="input-group">
+                    <label for="editCustomerName">Họ tên *</label>
+                    <input type="text" id="editCustomerName" name="name" required>
+                </div>
+                <div class="input-group">
+                    <label for="editCustomerEmail">Email *</label>
+                    <input type="email" id="editCustomerEmail" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="editCustomerPhone">Số điện thoại</label>
+                    <input type="tel" id="editCustomerPhone" name="phone">
+                </div>
+                <div class="input-group">
+                    <label for="editCustomerAddress">Địa chỉ</label>
+                    <textarea id="editCustomerAddress" name="address" rows="3"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Lưu thay đổi</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal đổi mật khẩu -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Đổi mật khẩu</h2>
+            <form id="changePasswordForm">
+                <div class="input-group">
+                    <label for="oldPassword">Mật khẩu cũ *</label>
+                    <input type="password" id="oldPassword" name="old_password" required placeholder="Nhập mật khẩu cũ">
+                </div>
+                <div class="input-group">
+                    <label for="newPassword">Mật khẩu mới *</label>
+                    <input type="password" id="newPassword" name="new_password" required minlength="8" placeholder="Tối thiểu 8 kí tự">
+                </div>
+                <div class="input-group">
+                    <label for="confirmPassword">Nhập lại mật khẩu *</label>
+                    <input type="password" id="confirmPassword" name="confirm_password" required minlength="8" placeholder="Nhập lại mật khẩu mới">
+                </div>
+                <button type="submit" class="submit-btn">Đổi mật khẩu</button>
+                <div id="message02" class="message" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../static/js/repass.js"></script>
+    <script src="../static/js/customer.js"></script>
+</body>
+</html> 

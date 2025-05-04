@@ -91,7 +91,9 @@ addCategoryForm.addEventListener('submit', async (e) => {
             alert('Thêm loại sản phẩm thành công!');
             addCategoryModal.style.display = 'none';
             addCategoryForm.reset();
-            loadCategories(currentPage);
+            // Tải lại trang đầu tiên để hiển thị danh mục mới
+            currentPage = 1;
+            loadCategories(1);
             // Cập nhật danh sách danh mục trong form thêm sản phẩm
             updateProductCategorySelect();
         } else {
@@ -116,8 +118,8 @@ async function loadCategories(page = 1) {
         const products = productsData.items || [];
         console.log('All products:', productsData);
 
-        // Lấy tất cả categories
-        const categoriesResponse = await fetch('http://localhost:8080/api/categories/');
+        // Lấy tất cả categories với page_size lớn
+        const categoriesResponse = await fetch('http://localhost:8080/api/categories/?page_size=100');
         if (!categoriesResponse.ok) {
             throw new Error('Không thể tải danh sách danh mục');
         }
