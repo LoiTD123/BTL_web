@@ -136,26 +136,42 @@ async def create_order_detail(
     return db_order_detail
 
 @router.get("")
-def get_orders(db: Session = Depends(get_db)):
-    """Lấy danh sách đơn hàng"""
+def get_orders(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Lấy danh sách đơn hàng với phân trang"""
     try:
-        # Lấy tất cả đơn hàng mà không join với bảng khác
-        orders = db.query(Order).all()
+        # Tính toán offset
+        offset = (page - 1) * page_size
         
-        # Chuyển đổi orders sang dictionary đơn giản
+        # Lấy tổng số đơn hàng
+        total = db.query(Order).count()
+        
+        # Lấy đơn hàng cho trang hiện tại
+        orders = db.query(Order).offset(offset).limit(page_size).all()
+        
+        # Chuyển đổi orders sang dictionary
         order_list = []
         for order in orders:
             order_data = {
                 "id": order.id,
                 "order_number": order.order_number,
+                "customer_name": order.customer.fullname if order.customer else "Khách vãng lai",
                 "total_amount": float(order.total_amount),
                 "status": order.status,
-                "created_at": order.created_at
+                "created_at": order.created_at,
+                "products": ", ".join([f"{od.product.name} ({od.quantity})" for od in order.order_details])
             }
             order_list.append(order_data)
         
         return {
-            "items": order_list
+            "items": order_list,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size
         }
     except Exception as e:
         logger.error(f"Error getting orders: {str(e)}")

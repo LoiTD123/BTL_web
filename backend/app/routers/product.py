@@ -68,7 +68,7 @@ async def create_product(
             status_code=404,
             detail="Danh mục không tồn tại"
         )
-    
+    #API xử lý ảnh
     # Xử lý file ảnh nếu có
     image_path = None
     if image:

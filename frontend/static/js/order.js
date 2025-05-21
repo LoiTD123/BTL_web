@@ -54,7 +54,7 @@ function setupEventListeners() {
 // Hàm tải danh sách đơn hàng
 async function loadOrders() {
     try {
-        const response = await fetch('http://localhost:8080/api/orders', {
+        const response = await fetch(`http://localhost:8080/api/orders?page=${currentPage}&page_size=${itemsPerPage}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
@@ -65,6 +65,12 @@ async function loadOrders() {
         const data = await response.json();
         orders = data.items;
         displayOrders(orders);
+        
+        // Cập nhật thông tin phân trang
+        const totalPages = data.total_pages;
+        document.getElementById('pageInfo').textContent = `Trang ${currentPage} / ${totalPages}`;
+        document.getElementById('prevPage').disabled = currentPage === 1;
+        document.getElementById('nextPage').disabled = currentPage === totalPages;
     } catch (error) {
         console.error('Lỗi:', error);
         alert('Có lỗi xảy ra khi tải danh sách đơn hàng');
@@ -76,11 +82,7 @@ function displayOrders(ordersToDisplay) {
     const container = document.getElementById('ordersList');
     container.innerHTML = '';
 
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const paginatedOrders = ordersToDisplay.slice(start, end);
-
-    paginatedOrders.forEach(order => {
+    ordersToDisplay.forEach(order => {
         const card = document.createElement('div');
         card.className = 'order-card';
         card.innerHTML = `
@@ -99,12 +101,6 @@ function displayOrders(ordersToDisplay) {
         `;
         container.appendChild(card);
     });
-
-    // Cập nhật thông tin phân trang
-    const totalPages = Math.ceil(ordersToDisplay.length / itemsPerPage);
-    document.getElementById('pageInfo').textContent = `Trang ${currentPage} / ${totalPages}`;
-    document.getElementById('prevPage').disabled = currentPage === 1;
-    document.getElementById('nextPage').disabled = currentPage === totalPages;
 }
 
 // Hàm chuyển đổi trạng thái sang tiếng Việt

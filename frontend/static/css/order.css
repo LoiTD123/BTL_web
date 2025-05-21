@@ -203,6 +203,8 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     width: fit-content;
+    position: relative;
+    z-index: 10;
 }
 
 .page-btn {
@@ -213,23 +215,28 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-size: 14px;
+    min-width: 120px;
 }
 
 .page-btn:hover:not(:disabled) {
     background: #5e35b1;
+    transform: translateY(-1px);
 }
 
 .page-btn:disabled {
     background: #ccc;
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .current-page {
     font-weight: bold;
     color: #333;
     padding: 0 10px;
-    min-width: 80px;
+    min-width: 100px;
     text-align: center;
+    font-size: 14px;
 }
 
 /* Responsive styles */
