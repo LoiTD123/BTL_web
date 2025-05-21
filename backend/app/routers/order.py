@@ -33,7 +33,7 @@ async def create_order(
         if order.customer_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Không có quyền tạo đơn hàng cho người khác"
+                detail="Bạn không có quyền tạo đơn hàng cho người khác"
             )
         
         # Tạo đơn hàng mới với status là chữ hoa
@@ -104,7 +104,7 @@ async def create_order(
         logger.error(f"Error creating order: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Lỗi khi tạo đơn hàng: {str(e)}"
+            detail=f"Đã xảy ra lỗi khi tạo đơn hàng: {str(e)}"
         )
 
 @router.post("/{order_id}/details", response_model=OrderDetailResponse)
@@ -119,7 +119,7 @@ async def create_order_detail(
     if not order:
         raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
     if order.customer_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Không có quyền thêm chi tiết đơn hàng")
+        raise HTTPException(status_code=403, detail="Bạn không có quyền thêm chi tiết đơn hàng này")
     
     # Tạo chi tiết đơn hàng
     db_order_detail = OrderDetail(
@@ -139,6 +139,7 @@ async def create_order_detail(
 def get_orders(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Lấy danh sách đơn hàng với phân trang"""
@@ -177,13 +178,14 @@ def get_orders(
         logger.error(f"Error getting orders: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Lỗi khi lấy danh sách đơn hàng: {str(e)}"
+            detail=f"Đã xảy ra lỗi khi lấy danh sách đơn hàng: {str(e)}"
         )
 
 @router.put("/{order_id}")
 def update_order(
     order_id: int,
     order_update: dict,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Cập nhật thông tin đơn hàng"""
@@ -192,6 +194,13 @@ def update_order(
         order = db.query(Order).filter(Order.id == order_id).first()
         if not order:
             raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
+        
+        # Kiểm tra quyền sửa đơn hàng
+        if order.customer_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Bạn không có quyền sửa đơn hàng này"
+            )
         
         # Cập nhật các trường được phép
         if "status" in order_update:
@@ -214,12 +223,13 @@ def update_order(
         logger.error(f"Error updating order: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Lỗi khi cập nhật đơn hàng: {str(e)}"
+            detail=f"Đã xảy ra lỗi khi cập nhật đơn hàng: {str(e)}"
         )
 
 @router.delete("/{order_id}")
 def delete_order(
     order_id: int,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Xóa đơn hàng"""
@@ -229,14 +239,38 @@ def delete_order(
         if not order:
             raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
         
-        # Xóa đơn hàng (cascade sẽ tự động xóa các order_details liên quan)
-        db.delete(order)
-        db.commit()
+        # Kiểm tra quyền xóa đơn hàng
+        # Cho phép admin (ID=1) xóa bất kỳ đơn hàng nào
+        if current_user.id != 1 and order.customer_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Bạn không có quyền xóa đơn hàng này"
+            )
         
-        return {"message": "Xóa đơn hàng thành công"}
+        try:
+            # Xóa các order details trước
+            db.query(OrderDetail).filter(OrderDetail.order_id == order_id).delete()
+            
+            # Sau đó xóa đơn hàng
+            db.delete(order)
+            db.commit()
+            
+            return {"message": "Xóa đơn hàng thành công"}
+            
+        except Exception as e:
+            logger.error(f"Lỗi khi xóa đơn hàng: {str(e)}")
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Đã xảy ra lỗi khi xóa đơn hàng: {str(e)}"
+            )
+            
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error deleting order: {str(e)}")
+        logger.error(f"Lỗi không xác định khi xóa đơn hàng: {str(e)}")
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Lỗi khi xóa đơn hàng: {str(e)}"
+            detail=f"Đã xảy ra lỗi không xác định khi xóa đơn hàng: {str(e)}"
         ) 

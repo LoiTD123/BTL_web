@@ -11,6 +11,7 @@ from app.models.category import Category
 from app.models.product import Product
 from app.schemas.category import CategoryCreate, CategoryResponse
 from app.schemas.product import ProductResponse
+from app.crud.auth import get_current_user
 
 router = APIRouter(
     prefix="/api/categories",
@@ -26,9 +27,10 @@ async def create_category(
     name: str = Form(...),
     description: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Tạo loại sản phẩm mới"""
+    """Tạo danh mục mới"""
     # Kiểm tra tên danh mục đã tồn tại chưa
     existing_category = db.query(Category).filter(Category.name == name).first()
     if existing_category:
@@ -50,7 +52,7 @@ async def create_category(
             shutil.copyfileobj(image.file, buffer)
         
         # Lưu đường dẫn tương đối
-        image_path = unique_filename
+        image_path = f"/uploads/{unique_filename}"
     
     # Tạo danh mục mới
     db_category = Category(
@@ -125,7 +127,11 @@ def get_category_products(
     }
 
 @router.delete("/{category_id}")
-def delete_category(category_id: int, db: Session = Depends(get_db)):
+def delete_category(
+    category_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Xóa danh mục và tất cả sản phẩm thuộc danh mục đó"""
     # Kiểm tra danh mục tồn tại
     category = db.query(Category).filter(Category.id == category_id).first()
@@ -164,7 +170,10 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
     return {"message": "Xóa danh mục và tất cả sản phẩm thuộc danh mục thành công"}
 
 @router.get("/{category_id}", response_model=CategoryResponse)
-def get_category(category_id: int, db: Session = Depends(get_db)):
+def get_category(
+    category_id: int,
+    db: Session = Depends(get_db)
+):
     """Lấy thông tin chi tiết một danh mục"""
     category = db.query(Category).filter(Category.id == category_id).first()
     if not category:
@@ -178,6 +187,7 @@ async def update_category(
     name: str = Form(...),
     description: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Cập nhật thông tin danh mục"""
@@ -219,7 +229,7 @@ async def update_category(
             shutil.copyfileobj(image.file, buffer)
         
         # Lưu đường dẫn tương đối
-        category.image = unique_filename
+        category.image = f"/uploads/{unique_filename}"
     
     # Cập nhật thông tin
     category.name = name

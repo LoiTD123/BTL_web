@@ -18,8 +18,8 @@ async function loadCategories() {
     if (!checkAuth()) return;
 
     try {
-        const response = await fetch('http://localhost:8080/api/categories');
-        const data = await response.json();
+        const response = await fetch('http://localhost:8080/api/categories?page_size=100');
+        const categoriesData = await response.json();
         
         // Tạo dropdown menu cho danh mục
         const categoryLink = document.querySelector('.nav-links a:nth-child(2)');
@@ -39,18 +39,20 @@ async function loadCategories() {
         dropdown.appendChild(allProducts);
         
         // Thêm các danh mục
-        data.items.forEach(category => {
-            const categoryLink = document.createElement('a');
-            categoryLink.href = '#';
-            categoryLink.textContent = category.name;
-            categoryLink.onclick = (e) => {
-                e.preventDefault();
-                currentCategory = category.id;
-                loadProducts(1);
-                dropdown.style.display = 'none';
-            };
-            dropdown.appendChild(categoryLink);
-        });
+        if (categoriesData.items && categoriesData.items.length > 0) {
+            categoriesData.items.forEach(category => {
+                const categoryLink = document.createElement('a');
+                categoryLink.href = '#';
+                categoryLink.textContent = category.name;
+                categoryLink.onclick = (e) => {
+                    e.preventDefault();
+                    currentCategory = category.id;
+                    loadProducts(1);
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(categoryLink);
+            });
+        }
         
         // Thêm dropdown vào navbar
         categoryLink.parentNode.insertBefore(dropdown, categoryLink.nextSibling);
@@ -65,6 +67,7 @@ async function loadCategories() {
         });
         
     } catch (error) {
+        console.error('Error loading categories:', error);
         if (error.status === 401) {
             window.location.href = 'login.html';
         }

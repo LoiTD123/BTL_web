@@ -16,8 +16,10 @@ router = APIRouter(
 )
 
 @router.get("/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
-    """Lấy thống kê tổng quan cho dashboard"""
+def get_dashboard_stats(
+    db: Session = Depends(get_db)
+):
+    
     # Tính toán thời gian
     now = datetime.now()
     last_month = now - timedelta(days=30)

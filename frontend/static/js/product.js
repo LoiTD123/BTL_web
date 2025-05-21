@@ -34,18 +34,20 @@ window.addEventListener('click', (e) => {
 async function loadCategories() {
     try {
         const response = await fetch('http://localhost:8080/api/categories?page_size=100');
-        const data = await response.json();
+        const categoriesData = await response.json();
         
         // Xóa các option cũ
         categorySelect.innerHTML = '';
         
         // Thêm các option mới
-        data.items.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-            categorySelect.appendChild(option);
-        });
+        if (categoriesData.items && categoriesData.items.length > 0) {
+            categoriesData.items.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Error loading categories:', error);
     }
@@ -54,6 +56,12 @@ async function loadCategories() {
 // Xử lý form thêm sản phẩm
 addProductForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
     
     const formData = new FormData();
     formData.append('name', document.getElementById('productName').value);
@@ -69,6 +77,9 @@ addProductForm.addEventListener('submit', async (e) => {
     try {
         const response = await fetch('http://localhost:8080/api/products', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: formData
         });
         
@@ -159,8 +170,18 @@ async function loadProducts(page = 1) {
 // Hàm sửa sản phẩm
 async function editProduct(productId) {
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
         // Lấy thông tin sản phẩm
-        const response = await fetch(`http://localhost:8080/api/products/${productId}`);
+        const response = await fetch(`http://localhost:8080/api/products/${productId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         if (!response.ok) {
             throw new Error('Không thể tải thông tin sản phẩm');
         }
@@ -176,12 +197,14 @@ async function editProduct(productId) {
         // Điền danh sách danh mục vào select box
         const categorySelect = document.getElementById('editProductCategory');
         categorySelect.innerHTML = '';
-        categoriesData.items.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-            categorySelect.appendChild(option);
-        });
+        if (categoriesData.items && categoriesData.items.length > 0) {
+            categoriesData.items.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+        }
         
         // Điền thông tin vào form
         document.getElementById('editProductId').value = product.id;
@@ -205,6 +228,12 @@ async function editProduct(productId) {
         editForm.onsubmit = async (e) => {
             e.preventDefault();
             
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
             const formData = new FormData();
             formData.append('name', document.getElementById('editProductName').value);
             formData.append('description', document.getElementById('editProductDescription').value);
@@ -219,6 +248,9 @@ async function editProduct(productId) {
             try {
                 const updateResponse = await fetch(`http://localhost:8080/api/products/${productId}`, {
                     method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: formData
                 });
                 
@@ -246,22 +278,31 @@ async function editProduct(productId) {
 async function deleteProduct(productId) {
     if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
         try {
-            console.log('Deleting product:', productId); // Log ID sản phẩm cần xóa
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            console.log('Deleting product:', productId);
             const response = await fetch(`http://localhost:8080/api/products/${productId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             
             if (response.ok) {
-                console.log('Product deleted successfully'); // Log khi xóa thành công
+                console.log('Product deleted successfully');
                 alert('Xóa sản phẩm thành công!');
-                loadProducts(currentPage); // Tải lại danh sách sản phẩm ở trang hiện tại
+                loadProducts(currentPage);
             } else {
                 const error = await response.json();
-                console.error('Error response:', error); // Log lỗi chi tiết
+                console.error('Error response:', error);
                 alert('Lỗi: ' + (error.detail || 'Không thể xóa sản phẩm'));
             }
         } catch (error) {
-            console.error('Error:', error); // Log lỗi nếu có
+            console.error('Error:', error);
             alert('Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại sau.');
         }
     }

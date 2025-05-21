@@ -11,6 +11,7 @@ from app.database import get_db
 from app.models.product import Product
 from app.models.category import Category
 from app.schemas.product import ProductCreate, ProductResponse
+from app.crud.auth import get_current_user
 
 router = APIRouter(
     prefix="/api/products",
@@ -58,6 +59,7 @@ async def create_product(
     price: float = Form(...),
     category_id: int = Form(...),
     image: Optional[UploadFile] = File(None),
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Tạo sản phẩm mới"""
@@ -170,7 +172,10 @@ def get_products(
     }
 
 @router.get("/{product_id}", response_model=ProductResponse)
-def get_product(product_id: int, db: Session = Depends(get_db)):
+def get_product(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
     """Lấy thông tin chi tiết sản phẩm"""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -185,6 +190,7 @@ async def update_product(
     price: float = Form(...),
     category_id: int = Form(...),
     image: Optional[UploadFile] = File(None),
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Cập nhật thông tin sản phẩm"""
@@ -242,7 +248,11 @@ async def update_product(
     return ProductResponse.model_validate(product)
 
 @router.delete("/{product_id}")
-def delete_product(product_id: int, db: Session = Depends(get_db)):
+async def delete_product(
+    product_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Xóa sản phẩm"""
     # Kiểm tra sản phẩm tồn tại
     product = db.query(Product).filter(Product.id == product_id).first()
@@ -252,12 +262,9 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
     # Xóa ảnh nếu có
     if product.image and product.image.startswith("/uploads/"):
         old_filename = product.image.replace("/uploads/", "")
-        image_path = UPLOAD_DIR / old_filename
-        if image_path.exists():
-            try:
-                image_path.unlink()
-            except Exception as e:
-                print(f"Lỗi khi xóa ảnh: {str(e)}")
+        old_image_path = UPLOAD_DIR / old_filename
+        if old_image_path.exists():
+            old_image_path.unlink()
     
     # Xóa sản phẩm
     db.delete(product)

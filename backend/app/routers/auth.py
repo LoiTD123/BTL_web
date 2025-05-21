@@ -40,15 +40,23 @@ def get_password_hash(password):
     """Mã hóa mật khẩu"""
     return pwd_context.hash(password)
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Tạo token JWT"""
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Tạo JWT access token
+    
+    Args:
+        data (dict): Dữ liệu cần mã hóa trong token
+        expires_delta (Optional[timedelta]): Thời gian hết hạn của token
+        
+    Returns:
+        str: JWT token đã được mã hóa
+    """
     to_encode = data.copy()
-    now = datetime.now(timezone.utc)  # thời gian hiện tại có timezone
+    now = datetime.now(timezone.utc)  # Sử dụng UTC timezone
     if expires_delta:
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "iat": now})  # Thêm thời gian tạo token
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -176,7 +184,7 @@ async def change_password(
     
     return {"message": "Đổi mật khẩu thành công"}
 
-@router.post("/token", response_model=Token, summary="Lấy access token (mới)")
+@router.post("/token", response_model=Token, summary="Lấy access token")
 def issue_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = get_user_by_username(db, form_data.username)
     if not user or not verify_password(form_data.password, user.password):

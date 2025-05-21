@@ -47,7 +47,7 @@ window.addEventListener('click', (e) => {
 async function updateProductCategorySelect() {
     try {
         const response = await fetch('http://localhost:8080/api/categories/');
-        const data = await response.json();
+        const categories = await response.json();
         
         // Tìm select box trong form thêm sản phẩm
         const categorySelect = document.getElementById('productCategory');
@@ -56,7 +56,7 @@ async function updateProductCategorySelect() {
             categorySelect.innerHTML = '';
             
             // Thêm các option mới
-            data.items.forEach(category => {
+            categories.forEach(category => {
                 const option = document.createElement('option');
                 option.value = category.id;
                 option.textContent = category.name;
@@ -72,6 +72,12 @@ async function updateProductCategorySelect() {
 addCategoryForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
     const formData = new FormData();
     formData.append('name', document.getElementById('categoryName').value);
     formData.append('description', document.getElementById('categoryDescription').value);
@@ -84,6 +90,9 @@ addCategoryForm.addEventListener('submit', async (e) => {
     try {
         const response = await fetch('http://localhost:8080/api/categories/', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: formData
         });
         
@@ -118,31 +127,25 @@ async function loadCategories(page = 1) {
         const products = productsData.items || [];
         console.log('All products:', productsData);
 
-        // Lấy tất cả categories với page_size lớn
-        const categoriesResponse = await fetch('http://localhost:8080/api/categories/?page_size=100');
+        // Lấy danh mục với phân trang
+        const categoriesResponse = await fetch(`http://localhost:8080/api/categories/?page=${page}&page_size=${PAGE_SIZE}`);
         if (!categoriesResponse.ok) {
             throw new Error('Không thể tải danh sách danh mục');
         }
         const categoriesData = await categoriesResponse.json();
-        const categories = categoriesData.items || [];
-        console.log('All categories:', categoriesData);
+        console.log('Categories data:', categoriesData);
 
         const categoriesList = document.getElementById('categoriesList');
         categoriesList.innerHTML = '';
 
-        if (categories.length === 0) {
+        if (!categoriesData.items || categoriesData.items.length === 0) {
             categoriesList.innerHTML = '<p>Không có loại sản phẩm nào</p>';
             return;
         }
 
-        // Tính toán phân trang cho categories
-        const startIndex = (page - 1) * PAGE_SIZE;
-        const endIndex = startIndex + PAGE_SIZE;
-        const paginatedCategories = categories.slice(startIndex, endIndex);
-
         // Tạo HTML cho từng category
         let html = '';
-        paginatedCategories.forEach(category => {
+        categoriesData.items.forEach(category => {
             // Lọc sản phẩm theo category_id
             const categoryProducts = products.filter(product => product.category_id === category.id);
             console.log(`Products for category ${category.id}:`, categoryProducts);
@@ -183,8 +186,8 @@ async function loadCategories(page = 1) {
         categoriesList.innerHTML = html;
 
         // Cập nhật phân trang
-        currentPage = page;
-        totalPages = Math.ceil(categories.length / PAGE_SIZE);
+        currentPage = categoriesData.page;
+        totalPages = categoriesData.total_pages;
         pageInfoSpan.textContent = `Trang ${currentPage} / ${totalPages}`;
         prevPageBtn.disabled = currentPage === 1;
         nextPageBtn.disabled = currentPage >= totalPages;
@@ -199,8 +202,18 @@ async function loadCategories(page = 1) {
 // Hàm sửa loại sản phẩm
 async function editCategory(categoryId) {
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
         // Lấy thông tin danh mục
-        const response = await fetch(`http://localhost:8080/api/categories/${categoryId}`);
+        const response = await fetch(`http://localhost:8080/api/categories/${categoryId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         if (!response.ok) {
             throw new Error('Không thể tải thông tin danh mục');
         }
@@ -226,6 +239,12 @@ async function editCategory(categoryId) {
         editForm.onsubmit = async (e) => {
             e.preventDefault();
             
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
             const formData = new FormData();
             formData.append('name', document.getElementById('editCategoryName').value);
             formData.append('description', document.getElementById('editCategoryDescription').value);
@@ -238,6 +257,9 @@ async function editCategory(categoryId) {
             try {
                 const updateResponse = await fetch(`http://localhost:8080/api/categories/${categoryId}`, {
                     method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: formData
                 });
                 
@@ -265,8 +287,17 @@ async function editCategory(categoryId) {
 async function deleteCategory(categoryId) {
     if (confirm('Bạn có chắc chắn muốn xóa loại sản phẩm này?')) {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
             const response = await fetch(`http://localhost:8080/api/categories/${categoryId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             
             if (response.ok) {

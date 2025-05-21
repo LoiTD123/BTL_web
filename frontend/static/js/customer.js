@@ -15,7 +15,7 @@ function setupEventListeners() {
     document.getElementById('searchCustomer').addEventListener('input', function(e) {
         const searchTerm = e.target.value.toLowerCase();
         const filteredCustomers = customers.filter(customer => 
-            customer.name.toLowerCase().includes(searchTerm) ||
+            customer.fullname.toLowerCase().includes(searchTerm) ||
             customer.phone?.toLowerCase().includes(searchTerm)
         );
         displayCustomers(filteredCustomers);
@@ -54,8 +54,28 @@ function setupEventListeners() {
 // Hàm tải danh sách khách hàng
 async function loadCustomers() {
     try {
-        const response = await fetch('http://localhost:8080/api/customers');
-        if (!response.ok) throw new Error('Không thể tải danh sách khách hàng');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const response = await fetch('http://localhost:8080/api/customers', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('Không thể tải danh sách khách hàng');
+        }
         
         const data = await response.json();
         customers = data.items;
@@ -80,8 +100,8 @@ function displayCustomers(customersToDisplay) {
         card.className = 'customer-card';
         card.innerHTML = `
             <div class="customer-info">
-                <h3>${customer.name}</h3>
-                <p>Số điện thoại: ${customer.phone || 'Chưa cập nhật'}</p>
+                <h3>${customer.fullname}</h3>
+                <p>Số điện thoại: ${customer.phonenum || 'Chưa cập nhật'}</p>
                 <p>Ngày tạo: ${new Date(customer.created_at).toLocaleDateString()}</p>
             </div>
             <div class="customer-actions">
@@ -105,8 +125,8 @@ function openEditModal(customerId) {
     if (!customer) return;
 
     document.getElementById('editCustomerId').value = customer.id;
-    document.getElementById('editCustomerName').value = customer.name;
-    document.getElementById('editCustomerPhone').value = customer.phone || '';
+    document.getElementById('editCustomerName').value = customer.fullname;
+    document.getElementById('editCustomerPhone').value = customer.phonenum || '';
 
     document.getElementById('editCustomerModal').style.display = "block";
 }
@@ -121,11 +141,24 @@ async function deleteCustomer(customerId) {
     if (!confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) return;
 
     try {
+        const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
         });
 
-        if (!response.ok) throw new Error('Không thể xóa khách hàng');
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('Không thể xóa khách hàng');
+        }
 
         // Cập nhật lại danh sách
         customers = customers.filter(c => c.id !== customerId);
@@ -141,6 +174,12 @@ async function deleteCustomer(customerId) {
 document.getElementById('editCustomerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     const customerId = document.getElementById('editCustomerId').value;
     const formData = {
         name: document.getElementById('editCustomerName').value,
@@ -151,12 +190,22 @@ document.getElementById('editCustomerForm').addEventListener('submit', async fun
         const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(formData)
         });
 
-        if (!response.ok) throw new Error('Không thể cập nhật thông tin');
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('Không thể cập nhật thông tin');
+        }
 
         // Cập nhật lại danh sách
         const updatedCustomer = await response.json();

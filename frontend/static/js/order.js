@@ -54,13 +54,28 @@ function setupEventListeners() {
 // Hàm tải danh sách đơn hàng
 async function loadOrders() {
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
         const response = await fetch(`http://localhost:8080/api/orders?page=${currentPage}&page_size=${itemsPerPage}`, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
             }
         });
-        if (!response.ok) throw new Error('Không thể tải danh sách đơn hàng');
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('Không thể tải danh sách đơn hàng');
+        }
         
         const data = await response.json();
         orders = data.items;
@@ -132,11 +147,28 @@ async function deleteOrder(orderId) {
     if (!confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) return;
 
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
         const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
 
-        if (!response.ok) throw new Error('Không thể xóa đơn hàng');
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('Không thể xóa đơn hàng');
+        }
 
         // Cập nhật lại danh sách
         orders = orders.filter(o => o.id !== orderId);
@@ -152,6 +184,12 @@ async function deleteOrder(orderId) {
 document.getElementById('editOrderForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     const orderId = document.getElementById('editOrderId').value;
     const formData = {
         status: document.getElementById('editOrderStatus').value,
@@ -162,12 +200,21 @@ document.getElementById('editOrderForm').addEventListener('submit', async functi
         const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(formData)
         });
 
-        if (!response.ok) throw new Error('Không thể cập nhật thông tin');
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('Không thể cập nhật thông tin');
+        }
 
         // Cập nhật lại danh sách
         const updatedOrder = await response.json();
