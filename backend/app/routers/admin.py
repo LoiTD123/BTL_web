@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 from datetime import datetime, timedelta
+from fastapi import status
+import logging
 
 from app.database import get_db
 from app.models.order import Order
@@ -14,6 +16,8 @@ router = APIRouter(
     prefix="/api/admin",
     tags=["admin"]
 )
+
+logger = logging.getLogger(__name__)
 
 @router.get("/stats")
 def get_dashboard_stats(
@@ -54,27 +58,38 @@ def get_dashboard_stats(
 @router.get("/revenue")
 def get_revenue_data(db: Session = Depends(get_db)):
     """Lấy dữ liệu doanh thu theo tháng"""
-    # Lấy dữ liệu 6 tháng gần nhất
-    now = datetime.now()
-    months = []
-    values = []
-    
-    for i in range(5, -1, -1):
-        month = now - timedelta(days=30*i)
-        month_str = month.strftime("%Y-%m")
-        months.append(month_str)
+    try:
+        # Lấy dữ liệu 6 tháng gần nhất
+        now = datetime.now()
+        months = []
+        values = []
         
-        # Tính doanh thu tháng
-        revenue = db.query(func.sum(Order.total_amount)).filter(
-            func.date_trunc('month', Order.created_at) == month_str
-        ).scalar() or 0
+        for i in range(5, -1, -1):
+            month = now - timedelta(days=30*i)
+            month_start = datetime(month.year, month.month, 1)
+            month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            
+            month_str = month.strftime("%Y-%m")
+            months.append(month_str)
+            
+            # Tính doanh thu tháng
+            revenue = db.query(func.sum(Order.total_amount)).filter(
+                Order.created_at >= month_start,
+                Order.created_at <= month_end
+            ).scalar() or 0
+            
+            values.append(float(revenue))
         
-        values.append(float(revenue))
-    
-    return {
-        "labels": months,
-        "values": values
-    }
+        return {
+            "labels": months,
+            "values": values
+        }
+    except Exception as e:
+        logger.error(f"Error getting revenue data: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Đã xảy ra lỗi khi lấy dữ liệu doanh thu: {str(e)}"
+        )
 
 @router.get("/top-products")
 def get_top_products(db: Session = Depends(get_db)):
@@ -95,13 +110,20 @@ def get_top_products(db: Session = Depends(get_db)):
 @router.get("/recent-orders")
 def get_recent_orders(db: Session = Depends(get_db)):
     """Lấy danh sách đơn hàng gần đây"""
-    # Lấy 10 đơn hàng gần nhất
-    orders = db.query(Order).order_by(Order.created_at.desc()).limit(10).all()
-    
-    return [{
-        "id": order.id,
-        "customer_name": order.user.fullname,
-        "products": ", ".join([f"{od.product.name} ({od.quantity})" for od in order.orderdetails]),
-        "total": float(order.total_amount),
-        "status": order.status
-    } for order in orders] 
+    try:
+        # Lấy 10 đơn hàng gần nhất
+        orders = db.query(Order).order_by(Order.created_at.desc()).limit(10).all()
+        
+        return [{
+            "id": order.id,
+            "customer_name": order.customer.fullname if order.customer else "Khách vãng lai",
+            "products": ", ".join([f"{od.product.name} ({od.quantity})" for od in order.order_details]),
+            "total": float(order.total_amount),
+            "status": order.status
+        } for order in orders]
+    except Exception as e:
+        logger.error(f"Error getting recent orders: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Đã xảy ra lỗi khi lấy danh sách đơn hàng gần đây: {str(e)}"
+        ) 

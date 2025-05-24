@@ -101,11 +101,6 @@ async function loadRecentOrders() {
                 <td>${order.products}</td>
                 <td>${order.total.toLocaleString('vi-VN')}đ</td>
                 <td>${order.status}</td>
-                <td>
-                    <button class="action-btn view-btn" onclick="viewOrder(${order.id})">Xem</button>
-                    <button class="action-btn edit-btn" onclick="editOrder(${order.id})">Sửa</button>
-                    <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})">Xóa</button>
-                </td>
             `;
             tableBody.appendChild(row);
         });
